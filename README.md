@@ -43,18 +43,25 @@ may work on those hosts, but they are untested and outside the support matrix.
 
 ## Client enrollment
 
-There is no login, password, or session-token flow.
+The first login uses the bootstrap password configured on the server:
+
+```bash
+aiqiezi login
+aiqiezi change-password
+```
+
+The server returns `password_change_required` until the bootstrap password is
+changed. Changing it enrolls the client's persistent iroh EndpointId in the
+server whitelist. After that, the bootstrap password is ignored and the
+whitelist authorizes the EndpointId.
+
+Login and `change-password` must use the persistent client key. The server
+enrolls the EndpointId of the connection, not a temporary key.
 
 The client has a persistent iroh secret key and a stable EndpointId:
 
 ```bash
 aiqiezi whoami
-```
-
-The server administrator authorizes that EndpointId:
-
-```bash
-aiqiezi-server client-add <endpoint-id> --label "laptop"
 ```
 
 To revoke access, disable or remove the EndpointId on the server:
@@ -63,9 +70,14 @@ To revoke access, disable or remove the EndpointId on the server:
 aiqiezi-server client-disable <endpoint-id>
 ```
 
+The client never stores the server password. It stores only its own iroh secret
+key.
+
 ## Planned commands
 
 ```bash
+aiqiezi login
+aiqiezi change-password
 aiqiezi whoami
 aiqiezi server-info
 aiqiezi folder list --parent <id>
@@ -110,6 +122,9 @@ AIQIEZI_RELAY_URL
 AIQIEZI_RELAY_TOKEN
 AIQIEZI_DATA_DIR
 ```
+
+`AIQIEZI_BOOTSTRAP_PASSWORD` is server-side only. Clients prompt for the
+password interactively and never store it.
 
 The client secret key lives under:
 

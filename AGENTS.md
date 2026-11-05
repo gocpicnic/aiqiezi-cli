@@ -30,8 +30,10 @@ Mandatory constraints:
 - no direct PostgreSQL access;
 - no direct server filesystem access;
 - client identity is a persistent iroh EndpointId;
-- authorization is the server-side EndpointId whitelist;
-- no login, password, or session-token flow;
+- initial enrollment uses the server bootstrap password;
+- after the first password change, authorization is the server-side EndpointId
+  whitelist;
+- no session-token flow;
 - the shared client library must not depend on CLI or GUI frameworks.
 
 ## Platform support
@@ -107,16 +109,33 @@ The library must not:
 
 ## Client enrollment
 
+The first login uses the server's `AIQIEZI_BOOTSTRAP_PASSWORD`:
+
 ```bash
 # On the client
+aiqiezi login
+aiqiezi change-password
 aiqiezi whoami
-
-# On the server host
-aiqiezi-server client-add <endpoint-id> --label "laptop"
 ```
 
-There is no login, password, or session-token flow. A disabled or removed
-EndpointId is rejected at connection time.
+The server returns `password_change_required` until the bootstrap password is
+changed. The password change enrolls the client EndpointId in the server
+whitelist. After that, the bootstrap value is ignored and the whitelist
+authorizes the EndpointId.
+
+Login and `change-password` must use the client's persistent iroh secret key.
+Do not create a temporary endpoint for these commands: the server enrolls the
+connection EndpointId.
+
+A disabled or removed EndpointId is rejected at connection time.
+
+Server administrators can also list or manage enrolled clients:
+
+```bash
+# On the server host
+aiqiezi-server client-list
+aiqiezi-server client-disable <endpoint-id>
+```
 
 ## AI-agent usage
 
@@ -157,6 +176,9 @@ examples, and safety rules.
 
 - Never commit client keys, relay tokens, or runtime credentials.
 - Store the client secret key with restrictive permissions.
+- Prompt for passwords without echo; never put them in argv, environment, or
+  logs.
+- Never store the server password; store only the client secret key.
 - Redact secrets in errors and logs.
 - Do not log full endpoint tickets.
 - Treat EndpointId as identity and the secret key as the credential.
@@ -209,6 +231,7 @@ For Markdown use an HTML comment with the same content.
 - Unit-test JSON framing and protocol encoding.
 - Test pagination and cursor handling.
 - Test client-key and endpoint-ticket redaction.
+- Test password redaction and authentication error mapping.
 - Test error-to-exit-code mapping.
 - Test machine-readable output schemas.
 - Integration tests must not require production data or secrets.
