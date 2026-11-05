@@ -243,11 +243,16 @@ make ci
 make version
 ```
 
+`make build` copies the release binary to `dist/aiqiezi`
+(`dist/aiqiezi.exe` on Windows).
+
 Optional target builds:
 
 ```bash
 make build TARGET=x86_64-unknown-linux-musl
 ```
+
+Target builds are copied under `dist/<target>/aiqiezi`.
 
 `aiqiezi-proto` is consumed through a local path dependency during development:
 

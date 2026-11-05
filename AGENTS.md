@@ -283,6 +283,10 @@ make ci
 make version
 ```
 
+`make build` copies the release binary to `dist/aiqiezi`
+(`dist/aiqiezi.exe` on Windows). Target builds are copied under
+`dist/<target>/aiqiezi`.
+
 Cross-target builds use `TARGET`, for example:
 
 ```bash
