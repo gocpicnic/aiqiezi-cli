@@ -11,7 +11,7 @@ The CLI therefore uses:
 
 - iroh JSON for metadata and control;
 - iroh-blobs for media transfer;
-- the server EndpointId or endpoint ticket for connection setup.
+- the server EndpointId for connection setup.
 
 No HTTP endpoint is required.
 
@@ -43,12 +43,22 @@ may work on those hosts, but they are untested and outside the support matrix.
 
 ## Client enrollment
 
+Get the server EndpointId first:
+
+```bash
+# On the server host
+aiqiezi-server whoami
+```
+
 The first login uses the bootstrap password configured on the server:
 
 ```bash
 aiqiezi login
 aiqiezi change-password
 ```
+
+`aiqiezi-server whoami` prints the **server** EndpointId.
+`aiqiezi whoami` prints the **client** EndpointId.
 
 The server returns `password_change_required` until the bootstrap password is
 changed. Changing it enrolls the client's persistent iroh EndpointId in the
@@ -117,7 +127,6 @@ Planned environment variables:
 
 ```text
 AIQIEZI_SERVER_ID
-AIQIEZI_ENDPOINT_TICKET
 AIQIEZI_RELAY_URL
 AIQIEZI_RELAY_TOKEN
 AIQIEZI_DATA_DIR

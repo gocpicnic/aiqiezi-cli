@@ -73,7 +73,7 @@ aiqiezi-cli/
 - persistent client secret key and stable EndpointId;
 - JSON request/response framing;
 - protocol request/response types;
-- endpoint ticket/EndpointId handling;
+- server EndpointId handling;
 - iroh-blobs upload/download;
 - pagination and cursor helpers;
 - typed errors shared by CLI and GUI.
@@ -109,6 +109,13 @@ The library must not:
 
 ## Client enrollment
 
+Get the server EndpointId first:
+
+```bash
+# On the server host
+aiqiezi-server whoami
+```
+
 The first login uses the server's `AIQIEZI_BOOTSTRAP_PASSWORD`:
 
 ```bash
@@ -117,6 +124,9 @@ aiqiezi login
 aiqiezi change-password
 aiqiezi whoami
 ```
+
+`aiqiezi-server whoami` prints the server EndpointId; `aiqiezi whoami` prints
+the client EndpointId.
 
 The server returns `password_change_required` until the bootstrap password is
 changed. The password change enrolls the client EndpointId in the server
@@ -192,7 +202,6 @@ Planned variables:
 
 ```text
 AIQIEZI_SERVER_ID
-AIQIEZI_ENDPOINT_TICKET
 AIQIEZI_RELAY_URL
 AIQIEZI_RELAY_TOKEN
 AIQIEZI_DATA_DIR
