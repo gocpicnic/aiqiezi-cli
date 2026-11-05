@@ -34,6 +34,23 @@ Mandatory constraints:
 - no login, password, or session-token flow;
 - the shared client library must not depend on CLI or GUI frameworks.
 
+## Platform support
+
+Tier 1 platforms are x86_64 Windows, x86_64 macOS, and x86_64 Linux. ARM64
+targets are deferred. The CLI is built from source; no prebuilt binaries or
+installers are provided yet.
+
+Rules:
+
+- `aiqiezi-client` must not use Unix-only APIs, hardcoded `/` paths, Unix
+  domain sockets, signals, or shell commands for normal operation.
+- Use platform-native data directories for configuration, cache, and key
+  storage.
+- Abstract secret-key permissions: `0600`/`0700` on Unix and an appropriate
+  ACL or user-profile protection on Windows.
+- Keep stdout/stderr behavior and JSON schemas identical across platforms.
+- Document and test any platform-specific code path before adding it.
+
 ## Repository layout
 
 ```text
