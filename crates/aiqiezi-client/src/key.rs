@@ -62,6 +62,10 @@ fn set_private_permissions(path: &Path) -> anyhow::Result<()> {
         fs::set_permissions(path, fs::Permissions::from_mode(0o600))
             .with_context(|| format!("set permissions on {}", path.display()))?;
     }
+    #[cfg(not(unix))]
+    {
+        let _ = path;
+    }
     Ok(())
 }
 

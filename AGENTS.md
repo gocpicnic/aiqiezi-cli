@@ -293,6 +293,22 @@ Cross-target builds use `TARGET`, for example:
 make build TARGET=x86_64-unknown-linux-musl
 ```
 
+Windows MSVC cross-builds use cargo-xwin:
+
+```bash
+make build-windows
+```
+
+Output:
+
+```text
+dist/x86_64-pc-windows-msvc/aiqiezi.exe
+```
+
+`make build TARGET=x86_64-pc-windows-msvc` also uses cargo-xwin. The Windows
+build requires `cargo-xwin`, the MSVC Rust target, `llvm-tools`, `clang-cl`,
+and `lld-link`, and uses the static CRT.
+
 ## Source file rules
 
 Every new `.rs`, `.sql`, or `.md` source file must start with the project

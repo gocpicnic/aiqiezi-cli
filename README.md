@@ -254,6 +254,22 @@ make build TARGET=x86_64-unknown-linux-musl
 
 Target builds are copied under `dist/<target>/aiqiezi`.
 
+Cross-build the Windows MSVC executable on Linux:
+
+```bash
+make build-windows
+```
+
+Output:
+
+```text
+dist/x86_64-pc-windows-msvc/aiqiezi.exe
+```
+
+This requires `cargo-xwin`, the `x86_64-pc-windows-msvc` Rust target,
+`llvm-tools`, `clang-cl`, and `lld-link`. The executable is built with the
+static CRT so Windows does not need the VC++ runtime installed.
+
 `aiqiezi-proto` is consumed through a local path dependency during development:
 
 ```text
