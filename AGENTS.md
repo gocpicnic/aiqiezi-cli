@@ -19,7 +19,7 @@
 ## Project context
 
 `aiqiezi-cli` is the command-line client and shared Rust client library for the
-aiqiezi single-backend photo/video archive. See [README.md](README.md) and the
+aiqiezi-server photo/video archive. See [README.md](README.md) and the
 server repository for the system architecture.
 
 Mandatory constraints:
@@ -30,7 +30,7 @@ Mandatory constraints:
 - no direct PostgreSQL access;
 - no direct server filesystem access;
 - client identity is a persistent iroh EndpointId;
-- initial enrollment uses the server bootstrap password;
+- initial enrollment uses the aiqiezi-server bootstrap password;
 - after the first password change, authorization is the server-side EndpointId
   whitelist;
 - no session-token flow;
@@ -76,10 +76,10 @@ aiqiezi-cli/
 - iroh endpoint setup and shutdown;
 - relay/DNS configuration;
 - persistent client secret key and stable EndpointId;
-- client config file with the server EndpointId;
+- client config file with the aiqiezi-server EndpointId;
 - local socket client and cross-platform IPC abstraction;
 - server-only iroh firewall;
-- backend JSON request/response framing;
+- aiqiezi-server JSON request/response framing;
 - protocol request/response types;
 - iroh-blobs upload/download;
 - pagination and cursor helpers;
@@ -115,9 +115,9 @@ The library must not:
 - Runtime directory mode is `0700`; Unix socket mode is `0600`.
 - Local control uses the shared `aiqiezi-proto::Request` / `Response` envelope
   with JSON Lines, one request per connection.
-- The local daemon forwards backend commands through `aiqiezi-client`.
+- The local daemon forwards aiqiezi-server commands through `aiqiezi-client`.
 - Process commands such as `start`, `stop`, `status`, `whoami`, and
-  `set-server` do not use the backend wire protocol.
+  `set-server` do not use the aiqiezi-server wire protocol.
 
 ## Output contract
 
@@ -136,14 +136,14 @@ The library must not:
 
 ## Client enrollment
 
-Get the server EndpointId first:
+Get the aiqiezi-server EndpointId first:
 
 ```bash
 # On the server host
 aiqiezi-server whoami
 ```
 
-Configure the server EndpointId and start the local daemon:
+Configure the aiqiezi-server EndpointId and start the local daemon:
 
 ```bash
 # On the client
@@ -160,17 +160,17 @@ aiqiezi change-password
 aiqiezi whoami
 ```
 
-`aiqiezi-server whoami` prints the server EndpointId; `aiqiezi whoami` prints
-the client EndpointId.
+`aiqiezi-server whoami` prints the aiqiezi-server EndpointId; `aiqiezi whoami`
+prints the client EndpointId.
 
-The server returns `password_change_required` until the bootstrap password is
-changed. The first login exits nonzero in that state. The password change
-enrolls the client EndpointId in the server whitelist. After that, the bootstrap
-value is ignored and the whitelist authorizes the EndpointId.
+aiqiezi-server returns `password_change_required` until the bootstrap password
+is changed. The first login exits nonzero in that state. The password change
+enrolls the client EndpointId in the aiqiezi-server whitelist. After that, the
+bootstrap value is ignored and the whitelist authorizes the EndpointId.
 
 Login and `change-password` must use the client's persistent iroh secret key.
-Do not create a temporary endpoint for these commands: the server enrolls the
-connection EndpointId.
+Do not create a temporary endpoint for these commands: aiqiezi-server enrolls
+the connection EndpointId.
 
 A disabled or removed EndpointId is rejected at connection time.
 
@@ -232,7 +232,7 @@ error codes, and safety rules. Keep it in sync with CLI behavior.
 - The client daemon accepts iroh connections only from the configured server
   EndpointId; do not add a local-IP bypass.
 - Restrict the local socket to the current user.
-- Do not bypass the server whitelist for local development.
+- Do not bypass the aiqiezi-server whitelist for local development.
 - A stolen client key grants that client's access until its EndpointId is
   disabled or removed on the server.
 
@@ -246,7 +246,7 @@ AIQIEZI_RUNTIME_DIR    # default: <AIQIEZI_DATA_DIR>/run
 AIQIEZI_LOG_LEVEL
 ```
 
-The backend EndpointId is stored in:
+The aiqiezi-server EndpointId is stored in:
 
 ```text
 <AIQIEZI_DATA_DIR>/config/client.json

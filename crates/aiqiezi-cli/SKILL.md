@@ -1,6 +1,6 @@
 ---
 name: aiqiezi
-description: Use the aiqiezi CLI to inspect and manage an aiqiezi photo/video archive through a local client daemon.
+description: Use the aiqiezi CLI to inspect and manage an aiqiezi-server photo/video archive through a local client daemon.
 allowed-tools: Bash(aiqiezi:*) Bash(printf:*) Bash(nohup:*)
 ---
 
@@ -13,8 +13,8 @@ allowed-tools: Bash(aiqiezi:*) Bash(printf:*) Bash(nohup:*)
 
 # aiqiezi CLI
 
-Use this skill when the user asks to inspect or manage an aiqiezi archive from a
-terminal or agent environment.
+Use this skill when the user asks to inspect or manage an aiqiezi-server archive
+from a terminal or agent environment.
 
 Install it by copying this file to your agent's skills directory, for example:
 
@@ -25,9 +25,9 @@ Install it by copying this file to your agent's skills directory, for example:
 ## Prerequisites
 
 - `aiqiezi` is installed and on `PATH`.
-- The user has the server EndpointId.
+- The user has the aiqiezi-server EndpointId.
 - The local client daemon is running, or the user asks you to start it.
-- Enrollment requires the server bootstrap password from the user.
+- Enrollment requires the aiqiezi-server bootstrap password from the user.
 
 The client uses its persistent iroh key as its identity. There is no session
 token and no endpoint ticket.
@@ -39,13 +39,13 @@ token and no endpoint ticket.
 - Read passwords only through `--password-stdin`.
 - Do not ask for or print the client secret key.
 - Do not edit `config/client.json` or `key_data/secret_key.bin` directly.
-- Use `aiqiezi set-server` to change the server EndpointId.
+- Use `aiqiezi set-server` to change the aiqiezi-server EndpointId.
 - Do not run `aiqiezi change-password` unless the user explicitly asks.
 - Do not run `aiqiezi stop` unless the user asks.
 - Do not start the daemon in the foreground from an agent; it blocks.
 - Treat the client secret key as a credential. A stolen key keeps that
-  EndpointId's access until the server administrator disables it.
-- The server EndpointId is public; the client key is secret.
+  EndpointId's access until the aiqiezi-server administrator disables it.
+- The aiqiezi-server EndpointId is public; the client key is secret.
 
 ## Daemon lifecycle
 
@@ -74,7 +74,7 @@ without backgrounding it.
 
 ## Configuration
 
-The server EndpointId is stored in:
+The aiqiezi-server EndpointId is stored in:
 
 ```text
 <AIQIEZI_DATA_DIR>/config/client.json
@@ -90,8 +90,8 @@ Do not edit the file manually. There is no endpoint ticket.
 
 ## First enrollment
 
-The first login uses the server bootstrap password and must be followed by a
-password change.
+The first login uses the aiqiezi-server bootstrap password and must be followed
+by a password change.
 
 ```bash
 # One password line on stdin
@@ -108,7 +108,7 @@ printf '%s\n%s\n%s\n' \
   | aiqiezi change-password --password-stdin
 ```
 
-The password change enrolls the client EndpointId in the server whitelist.
+The password change enrolls the client EndpointId in the aiqiezi-server whitelist.
 
 Later logins:
 
@@ -169,7 +169,7 @@ Errors use:
 
 ```text
 client_id      client EndpointId
-server_id      configured server EndpointId, or null
+server_id      configured aiqiezi-server EndpointId, or null
 uptime_secs    daemon uptime
 version        CLI version and build date
 socket         local socket path
@@ -183,7 +183,7 @@ invalid_credentials        wrong password
 weak_password              new password does not meet policy
 password_unchanged         new password equals old password
 rate_limited               too many failed attempts; retry later
-auth_unavailable           server EndpointId is not configured
+auth_unavailable           aiqiezi-server EndpointId is not configured
 invalid_request            missing or malformed parameters
 unknown_command            unsupported local command
 internal                   backend or local operation failed
@@ -201,7 +201,7 @@ aiqiezi whoami
 aiqiezi whoami --json
 ```
 
-Show server configuration and daemon state:
+Show aiqiezi-server configuration and daemon state:
 
 ```bash
 aiqiezi status --json
@@ -213,7 +213,7 @@ Request backend information after enrollment:
 aiqiezi server-info --json
 ```
 
-Change the server EndpointId:
+Change the aiqiezi-server EndpointId:
 
 ```bash
 aiqiezi set-server <server-endpoint-id> --json
@@ -228,8 +228,8 @@ aiqiezi set-server <server-endpoint-id> --json
 - `password_change_required`: run `aiqiezi change-password --password-stdin`.
 - `rate_limited`: wait for the reported retry period.
 - `invalid_credentials`: verify the password with the user; do not print it.
-- Backend connection failures: confirm the server EndpointId and that the
-  client is whitelisted on the server.
+- aiqiezi-server connection failures: confirm the aiqiezi-server EndpointId
+  and that the client is whitelisted on aiqiezi-server.
 
 ## Current limitations
 

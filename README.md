@@ -7,7 +7,9 @@
 
 # aiqiezi-cli
 
-Command-line client for the aiqiezi single-backend photo and video archive.
+Agent-ready command-line client and shared Rust client library for
+[aiqiezi-server](https://github.com/gocpicnic/aiqiezi-server), the self-hosted
+photo/video archive backend.
 
 ## Why iroh
 
@@ -18,7 +20,7 @@ The CLI therefore uses:
 
 - iroh JSON for metadata and control;
 - iroh-blobs for media transfer;
-- the server EndpointId for connection setup.
+- the aiqiezi-server EndpointId for connection setup.
 
 No HTTP endpoint is required.
 
@@ -29,12 +31,27 @@ First CLI milestone implemented:
 - local client daemon;
 - cross-platform local socket;
 - persistent client key and EndpointId;
-- backend EndpointId stored in a config file;
+- aiqiezi-server EndpointId stored in a config file;
 - server-only iroh firewall;
 - `start`, `stop`, `status`, `whoami`, `set-server`, `login`,
   `change-password`, and `server-info`.
 
 The GUI is still deferred.
+
+## Built for agents
+
+The CLI is designed to be driven by scripts and AI agents:
+
+- command-first local daemon;
+- shared `Request` / `Response` JSON envelope;
+- `--json` output;
+- `--password-stdin` for non-interactive login and password changes;
+- local socket JSON control channel;
+- `SKILL.md` for agent usage.
+
+An MCP bridge to the local socket is future work. The daemon currently starts
+in the foreground; [SKILL.md](crates/aiqiezi-cli/SKILL.md) documents
+platform-specific background startup.
 
 ## Architecture
 
@@ -46,7 +63,7 @@ aiqiezi CLI
 aiqiezi client daemon
     |
     | persistent client key + iroh endpoint
-    | firewall: configured server EndpointId only
+    | firewall: configured aiqiezi-server EndpointId only
     v
 aiqiezi-server
 ```
@@ -69,7 +86,7 @@ Local IPC uses:
 
 ## Client enrollment
 
-Get the server EndpointId first:
+Get the aiqiezi-server EndpointId first:
 
 ```bash
 # On the server host
@@ -96,7 +113,7 @@ The first login returns `password_change_required` and exits nonzero. Run
 persistent iroh EndpointId in the server whitelist. After that, the bootstrap
 password is ignored and the whitelist authorizes the EndpointId.
 
-`aiqiezi-server whoami` prints the **server** EndpointId.
+`aiqiezi-server whoami` prints the **aiqiezi-server** EndpointId.
 `aiqiezi whoami` prints the **client** EndpointId.
 
 Login and `change-password` must use the persistent client key. The server
@@ -143,7 +160,7 @@ AIQIEZI_RUNTIME_DIR    # default: <AIQIEZI_DATA_DIR>/run
 AIQIEZI_LOG_LEVEL      # default: info
 ```
 
-The backend EndpointId is stored in:
+The aiqiezi-server EndpointId is stored in:
 
 ```text
 <AIQIEZI_DATA_DIR>/config/client.json
@@ -186,7 +203,7 @@ There is no endpoint ticket in the client configuration.
 - Passwords are prompted without echo and are never stored.
 - Agent mode reads passwords from stdin; never pass them in argv or the
   environment.
-- The client stores only its own iroh secret key and the server EndpointId.
+- The client stores only its own iroh secret key and the aiqiezi-server EndpointId.
 
 ## Machine-readable output
 
@@ -246,4 +263,4 @@ types into this repository.
 - [AGENTS.md](AGENTS.md): implementation rules for AI coding agents
 - [crates/aiqiezi-cli/SKILL.md](crates/aiqiezi-cli/SKILL.md): agent-facing
   command and safety reference
-- `../aiqiezi-server/README.md`: system architecture and backend setup
+- `../aiqiezi-server/README.md`: system architecture and aiqiezi-server setup

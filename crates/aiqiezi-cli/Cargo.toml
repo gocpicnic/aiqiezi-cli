@@ -3,7 +3,7 @@ name = "aiqiezi-cli"
 version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0"
-description = "Command-line client for the aiqiezi photo and video archive"
+description = "Agent-ready command-line client for aiqiezi-server"
 repository = "https://github.com/gocpicnic/aiqiezi-cli"
 
 [dependencies]
