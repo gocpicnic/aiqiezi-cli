@@ -284,4 +284,5 @@ types into this repository.
 - [AGENTS.md](AGENTS.md): implementation rules for AI coding agents
 - [crates/aiqiezi-cli/SKILL.md](crates/aiqiezi-cli/SKILL.md): agent-facing
   command and safety reference
-- `../aiqiezi-server/README.md`: system architecture and aiqiezi-server setup
+- [aiqiezi-server](https://github.com/gocpicnic/aiqiezi-server): system
+  architecture and aiqiezi-server setup
