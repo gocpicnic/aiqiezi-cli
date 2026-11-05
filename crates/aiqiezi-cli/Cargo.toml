@@ -1,0 +1,27 @@
+[package]
+name = "aiqiezi-cli"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0"
+description = "Command-line client for the aiqiezi photo and video archive"
+repository = "https://github.com/gocpicnic/aiqiezi-cli"
+
+[dependencies]
+aiqiezi-client = { path = "../aiqiezi-client" }
+aiqiezi-proto = { path = "../../../aiqiezi-server/crates/aiqiezi-proto" }
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+iroh = "1.0"
+iroh-mdns-address-lookup = "0.4"
+rpassword = "7"
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+[[bin]]
+name = "aiqiezi"
+path = "src/main.rs"
+
+[dev-dependencies]
+tempfile = "3"

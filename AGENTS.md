@@ -34,6 +34,9 @@ Mandatory constraints:
 - after the first password change, authorization is the server-side EndpointId
   whitelist;
 - no session-token flow;
+- the CLI runs a local client daemon controlled over a local socket;
+- the client daemon accepts iroh connections only from the configured server
+  EndpointId;
 - the shared client library must not depend on CLI or GUI frameworks.
 
 ## Platform support
@@ -44,10 +47,12 @@ installers are provided yet.
 
 Rules:
 
-- `aiqiezi-client` must not use Unix-only APIs, hardcoded `/` paths, Unix
-  domain sockets, signals, or shell commands for normal operation.
-- Use platform-native data directories for configuration, cache, and key
-  storage.
+- `aiqiezi-client` must not use hardcoded `/` paths, raw Unix-only APIs,
+  signals, or shell commands outside the local IPC abstraction.
+- Local IPC must use a Unix domain socket on Linux/macOS and a named pipe on
+  Windows behind one shared abstraction.
+- Use a configurable data directory; the current default is `./data`.
+  Platform-native default directories are deferred.
 - Abstract secret-key permissions: `0600`/`0700` on Unix and an appropriate
   ACL or user-profile protection on Windows.
 - Keep stdout/stderr behavior and JSON schemas identical across platforms.
@@ -71,9 +76,11 @@ aiqiezi-cli/
 - iroh endpoint setup and shutdown;
 - relay/DNS configuration;
 - persistent client secret key and stable EndpointId;
-- JSON request/response framing;
+- client config file with the server EndpointId;
+- local socket client and cross-platform IPC abstraction;
+- server-only iroh firewall;
+- backend JSON request/response framing;
 - protocol request/response types;
-- server EndpointId handling;
 - iroh-blobs upload/download;
 - pagination and cursor helpers;
 - typed errors shared by CLI and GUI.
@@ -91,17 +98,33 @@ The library must not:
 `aiqiezi-cli` owns:
 
 - command parsing;
+- local daemon lifecycle and instance lock;
+- local socket server and command dispatcher;
 - human-readable formatting;
 - machine-readable output;
 - exit codes;
 - configuration and client-key loading;
 - agent skill documentation.
 
+## Client daemon and local socket
+
+- `aiqiezi start` runs the daemon in the foreground.
+- `aiqiezi stop` sends a shutdown command over the local socket.
+- The local socket path is `<AIQIEZI_RUNTIME_DIR>/client.sock`.
+- Linux/macOS use a Unix socket; Windows uses a named pipe.
+- Runtime directory mode is `0700`; Unix socket mode is `0600`.
+- Local control uses the shared `aiqiezi-proto::Request` / `Response` envelope
+  with JSON Lines, one request per connection.
+- The local daemon forwards backend commands through `aiqiezi-client`.
+- Process commands such as `start`, `stop`, `status`, `whoami`, and
+  `set-server` do not use the backend wire protocol.
+
 ## Output contract
 
 - stdout is for data only.
 - stderr is for errors, warnings, and progress.
-- `--json` prints one valid JSON document.
+- Current socket commands print the JSON response envelope.
+- Future commands may add `--json` for one valid JSON document.
 - Batch commands may use NDJSON/JSON Lines.
 - Never mix progress logs into stdout.
 - Exit code 0 on success; nonzero on failure.
@@ -116,10 +139,18 @@ Get the server EndpointId first:
 aiqiezi-server whoami
 ```
 
-The first login uses the server's `AIQIEZI_BOOTSTRAP_PASSWORD`:
+Configure the server EndpointId and start the local daemon:
 
 ```bash
 # On the client
+aiqiezi set-server <server-endpoint-id>
+aiqiezi start
+```
+
+The first login uses the server's `AIQIEZI_BOOTSTRAP_PASSWORD`:
+
+```bash
+# In another terminal
 aiqiezi login
 aiqiezi change-password
 aiqiezi whoami
@@ -190,24 +221,39 @@ examples, and safety rules.
   logs.
 - Never store the server password; store only the client secret key.
 - Redact secrets in errors and logs.
-- Do not log full endpoint tickets.
-- Treat EndpointId as identity and the secret key as the credential.
+- Treat the client EndpointId as identity and the client secret key as the
+  credential.
+- The client daemon accepts iroh connections only from the configured server
+  EndpointId; do not add a local-IP bypass.
+- Restrict the local socket to the current user.
 - Do not bypass the server whitelist for local development.
 - A stolen client key grants that client's access until its EndpointId is
   disabled or removed on the server.
 
 ## Configuration
 
-Planned variables:
+Environment variables:
 
 ```text
-AIQIEZI_SERVER_ID
-AIQIEZI_RELAY_URL
-AIQIEZI_RELAY_TOKEN
-AIQIEZI_DATA_DIR
+AIQIEZI_DATA_DIR       # default: ./data
+AIQIEZI_RUNTIME_DIR    # default: <AIQIEZI_DATA_DIR>/run
+AIQIEZI_LOG_LEVEL
 ```
 
-There is no `AIQIEZI_TOKEN`; authorization is by EndpointId.
+The backend EndpointId is stored in:
+
+```text
+<AIQIEZI_DATA_DIR>/config/client.json
+```
+
+```json
+{
+  "server_id": "<server-endpoint-id>"
+}
+```
+
+There is no endpoint ticket. There is no `AIQIEZI_TOKEN`; authorization is by
+EndpointId.
 
 ## Commands
 
@@ -216,7 +262,25 @@ cargo check --workspace
 cargo test --workspace
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo run -p aiqiezi-cli
+cargo run -p aiqiezi-cli -- --help
+cargo run -p aiqiezi-cli -- start
+```
+
+Makefile shortcuts:
+
+```bash
+make build
+make run ARGS="start"
+make test
+make clippy
+make ci
+make version
+```
+
+Cross-target builds use `TARGET`, for example:
+
+```bash
+make build TARGET=x86_64-unknown-linux-musl
 ```
 
 ## Source file rules
@@ -239,7 +303,9 @@ For Markdown use an HTML comment with the same content.
 
 - Unit-test JSON framing and protocol encoding.
 - Test pagination and cursor handling.
-- Test client-key and endpoint-ticket redaction.
+- Test client-key and config redaction.
+- Test local socket framing and permissions.
+- Test the server-only iroh firewall.
 - Test password redaction and authentication error mapping.
 - Test error-to-exit-code mapping.
 - Test machine-readable output schemas.

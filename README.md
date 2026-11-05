@@ -1,3 +1,10 @@
+<!--
+  README.md
+  Copyright 2026 aiqiezi. All rights reserved.
+  Use of this source code is governed by the AGPL-3.0
+  license that can be found in the LICENSE file.
+-->
+
 # aiqiezi-cli
 
 Command-line client for the aiqiezi single-backend photo and video archive.
@@ -17,21 +24,35 @@ No HTTP endpoint is required.
 
 ## Status
 
-Early design phase. The workspace and client library are not implemented yet.
+First CLI milestone implemented:
 
-Planned workspace:
+- local client daemon;
+- cross-platform local socket;
+- persistent client key and EndpointId;
+- backend EndpointId stored in a config file;
+- server-only iroh firewall;
+- `start`, `stop`, `status`, `whoami`, `set-server`, `login`,
+  `change-password`, and `server-info`.
+
+The GUI is still deferred.
+
+## Architecture
 
 ```text
-aiqiezi-cli/
-├── Cargo.toml
-├── crates/
-│   ├── aiqiezi-client/        # shared iroh client library
-│   └── aiqiezi-cli/           # CLI binary
-└── AGENTS.md
+aiqiezi CLI
+    |
+    | local socket: JSON Lines
+    v
+aiqiezi client daemon
+    |
+    | persistent client key + iroh endpoint
+    | firewall: configured server EndpointId only
+    v
+aiqiezi-server
 ```
 
-`aiqiezi-client` is shared with the future egui GUI. The CLI is a thin wrapper
-around that library.
+The local daemon runs in the foreground. Run `aiqiezi start` in one terminal and
+the other commands in another terminal.
 
 ## Platform support
 
@@ -40,6 +61,11 @@ currently built from source; prebuilt binaries and installers are deferred.
 
 ARM64 targets, including Apple Silicon, are not yet supported. Source builds
 may work on those hosts, but they are untested and outside the support matrix.
+
+Local IPC uses:
+
+- Unix domain socket on Linux and macOS;
+- named pipe on Windows.
 
 ## Client enrollment
 
@@ -50,114 +76,159 @@ Get the server EndpointId first:
 aiqiezi-server whoami
 ```
 
-The first login uses the bootstrap password configured on the server:
+Configure the client and start its local daemon:
+
+```bash
+aiqiezi set-server <server-endpoint-id>
+aiqiezi start
+```
+
+In another terminal, perform the first login:
 
 ```bash
 aiqiezi login
 aiqiezi change-password
+aiqiezi server-info
 ```
-
-`aiqiezi-server whoami` prints the **server** EndpointId.
-`aiqiezi whoami` prints the **client** EndpointId.
 
 The server returns `password_change_required` until the bootstrap password is
 changed. Changing it enrolls the client's persistent iroh EndpointId in the
 server whitelist. After that, the bootstrap password is ignored and the
 whitelist authorizes the EndpointId.
 
+`aiqiezi-server whoami` prints the **server** EndpointId.
+`aiqiezi whoami` prints the **client** EndpointId.
+
 Login and `change-password` must use the persistent client key. The server
 enrolls the EndpointId of the connection, not a temporary key.
 
-The client has a persistent iroh secret key and a stable EndpointId:
+Stop the daemon with:
 
 ```bash
-aiqiezi whoami
-```
-
-To revoke access, disable or remove the EndpointId on the server:
-
-```bash
-aiqiezi-server client-disable <endpoint-id>
+aiqiezi stop
 ```
 
 The client never stores the server password. It stores only its own iroh secret
 key.
 
-## Planned commands
+## Commands
 
 ```bash
+aiqiezi start
+aiqiezi stop
+aiqiezi status
+aiqiezi whoami
+aiqiezi set-server <endpoint-id>
 aiqiezi login
 aiqiezi change-password
-aiqiezi whoami
 aiqiezi server-info
-aiqiezi folder list --parent <id>
-aiqiezi folder tree --path /photos
-aiqiezi asset list --cursor <cursor>
-aiqiezi asset get <id>
-aiqiezi asset search "summer"
-aiqiezi upload ./photo.jpg --parent <id>
-aiqiezi download <content-hash> --output ./photo.jpg
 ```
 
-## Machine-readable output
-
-The CLI is designed for scripts and AI agents:
-
-```bash
-aiqiezi asset list --json
-aiqiezi asset search "summer" --json
-aiqiezi folder tree --path /photos --json
-```
-
-Rules:
-
-- stdout contains data only;
-- stderr contains errors, warnings, and progress;
-- JSON output uses stable schemas;
-- batch commands may use NDJSON;
-- exit code is nonzero on failure;
-- no interactive prompts in agent mode.
-
-A future `SKILL.md` will document agent usage, output schemas, enrollment, and
-safe destructive operations.
+Future commands will add folders, assets, search, upload, and download.
 
 ## Configuration
 
-Planned environment variables:
+Environment variables:
 
 ```text
-AIQIEZI_SERVER_ID
-AIQIEZI_RELAY_URL
-AIQIEZI_RELAY_TOKEN
-AIQIEZI_DATA_DIR
+AIQIEZI_DATA_DIR       # default: ./data
+AIQIEZI_RUNTIME_DIR    # default: <AIQIEZI_DATA_DIR>/run
+AIQIEZI_LOG_LEVEL      # default: info
 ```
 
-`AIQIEZI_BOOTSTRAP_PASSWORD` is server-side only. Clients prompt for the
-password interactively and never store it.
-
-The client secret key lives under:
+The backend EndpointId is stored in:
 
 ```text
-AIQIEZI_DATA_DIR/key_data/secret_key.bin
+<AIQIEZI_DATA_DIR>/config/client.json
+```
+
+Example:
+
+```json
+{
+  "server_id": "<server-endpoint-id>"
+}
+```
+
+The config file is mode `0600`. The client secret key lives under:
+
+```text
+<AIQIEZI_DATA_DIR>/key_data/secret_key.bin
 ```
 
 Back up this key. Losing it changes the client EndpointId, and the new
 EndpointId must be enrolled on the server.
 
-## Development
+The local socket lives under:
 
-Planned commands:
+```text
+<AIQIEZI_RUNTIME_DIR>/client.sock
+```
+
+The runtime directory is mode `0700`; the Unix socket is mode `0600`.
+
+There is no endpoint ticket in the client configuration.
+
+## Security
+
+- The client daemon accepts iroh connections only from the configured server
+  EndpointId.
+- Outbound connections are checked against the same EndpointId.
+- There is no local-IP bypass.
+- The local socket is the only local control channel.
+- Passwords are prompted without echo and are never stored.
+- The client stores only its own iroh secret key and the server EndpointId.
+
+## Machine-readable output
+
+Current commands print the JSON response envelope on stdout. `whoami` prints
+only the client EndpointId.
+
+Rules:
+
+- stdout contains data only;
+- stderr contains errors, warnings, and progress;
+- exit code is nonzero on failure;
+- future batch commands may use NDJSON.
+
+## Development
 
 ```bash
 cargo check --workspace
 cargo test --workspace
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
-cargo run -p aiqiezi-cli
+cargo run -p aiqiezi-cli -- --help
+cargo run -p aiqiezi-cli -- start
 ```
+
+Or use the Makefile:
+
+```bash
+make build
+make run ARGS="start"
+make test
+make clippy
+make ci
+make version
+```
+
+Optional target builds:
+
+```bash
+make build TARGET=x86_64-unknown-linux-musl
+```
+
+`aiqiezi-proto` is consumed through a local path dependency during development:
+
+```text
+../../../aiqiezi-server/crates/aiqiezi-proto
+```
+
+The release dependency strategy is not decided yet. Do not copy the protocol
+types into this repository.
 
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): implementation rules for AI coding agents
 - `../aiqiezi-server/README.md`: system architecture and backend setup
-- `../aiqiezi-server/docs/protocol.md`: iroh JSON protocol

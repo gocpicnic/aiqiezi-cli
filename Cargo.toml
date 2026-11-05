@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "crates/aiqiezi-client",
+    "crates/aiqiezi-cli",
+]
+resolver = "2"
