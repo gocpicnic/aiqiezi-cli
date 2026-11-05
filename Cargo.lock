@@ -98,6 +98,7 @@ dependencies = [
 [[package]]
 name = "aiqiezi-proto"
 version = "0.1.0"
+source = "git+https://github.com/gocpicnic/aiqiezi-server?rev=4640cdda083f8ddc12010763050a461b3360c093#4640cdda083f8ddc12010763050a461b3360c093"
 dependencies = [
  "serde",
  "serde_json",

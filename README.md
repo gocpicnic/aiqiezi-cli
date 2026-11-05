@@ -270,13 +270,13 @@ This requires `cargo-xwin`, the `x86_64-pc-windows-msvc` Rust target,
 `llvm-tools`, `clang-cl`, and `lld-link`. The executable is built with the
 static CRT so Windows does not need the VC++ runtime installed.
 
-`aiqiezi-proto` is consumed through a local path dependency during development:
+`aiqiezi-proto` comes from `aiqiezi-server` through a pinned Git dependency:
 
-```text
-../../../aiqiezi-server/crates/aiqiezi-proto
+```toml
+aiqiezi-proto = { git = "https://github.com/gocpicnic/aiqiezi-server", rev = "4640cdda083f8ddc12010763050a461b3360c093" }
 ```
 
-The release dependency strategy is not decided yet. Do not copy the protocol
+Update the revision when the wire protocol changes. Do not copy the protocol
 types into this repository.
 
 ## Documentation

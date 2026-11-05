@@ -7,7 +7,7 @@ description = "Shared Rust client library for aiqiezi-server"
 repository = "https://github.com/gocpicnic/aiqiezi-cli"
 
 [dependencies]
-aiqiezi-proto = { path = "../../../aiqiezi-server/crates/aiqiezi-proto" }
+aiqiezi-proto = { git = "https://github.com/gocpicnic/aiqiezi-server", rev = "4640cdda083f8ddc12010763050a461b3360c093" }
 anyhow = "1"
 interprocess = { version = "2.4", features = ["tokio"] }
 iroh = "1.0"

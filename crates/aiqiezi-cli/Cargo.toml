@@ -8,7 +8,7 @@ repository = "https://github.com/gocpicnic/aiqiezi-cli"
 
 [dependencies]
 aiqiezi-client = { path = "../aiqiezi-client" }
-aiqiezi-proto = { path = "../../../aiqiezi-server/crates/aiqiezi-proto" }
+aiqiezi-proto = { git = "https://github.com/gocpicnic/aiqiezi-server", rev = "4640cdda083f8ddc12010763050a461b3360c093" }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 iroh = "1.0"
