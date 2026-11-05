@@ -14,6 +14,10 @@ use clap::{Parser, Subcommand};
     about = "aiqiezi photo and video archive client"
 )]
 pub struct Cli {
+    /// Print machine-readable JSON where the command supports it
+    #[arg(long, global = true)]
+    pub json: bool,
+
     #[command(subcommand)]
     pub command: Command,
 }
@@ -35,9 +39,42 @@ pub enum Command {
         endpoint_id: String,
     },
     /// Log in to the backend with the bootstrap password
-    Login,
+    Login {
+        /// Read the password from stdin instead of prompting
+        #[arg(long)]
+        password_stdin: bool,
+    },
     /// Change the backend password
-    ChangePassword,
+    ChangePassword {
+        /// Read old password, new password, and confirmation from stdin
+        #[arg(long)]
+        password_stdin: bool,
+    },
     /// Request server-info from the backend
     ServerInfo,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Cli, Command};
+    use clap::Parser;
+
+    #[test]
+    fn parses_login_password_stdin() {
+        let cli = Cli::try_parse_from(["aiqiezi", "login", "--password-stdin"]).unwrap();
+        assert!(!cli.json);
+        assert!(matches!(
+            cli.command,
+            Command::Login {
+                password_stdin: true
+            }
+        ));
+    }
+
+    #[test]
+    fn parses_global_json_after_subcommand() {
+        let cli = Cli::try_parse_from(["aiqiezi", "whoami", "--json"]).unwrap();
+        assert!(cli.json);
+        assert!(matches!(cli.command, Command::Whoami));
+    }
 }

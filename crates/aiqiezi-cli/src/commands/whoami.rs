@@ -6,9 +6,19 @@
 */
 
 use aiqiezi_client::{key, ClientConfig};
+use serde_json::json;
 
-pub fn run(config: &ClientConfig) -> anyhow::Result<()> {
+pub fn run(config: &ClientConfig, json: bool) -> anyhow::Result<()> {
     let key = key::load_key(config)?;
-    println!("{}", key.public());
+    let endpoint_id = key.public();
+
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string(&json!({"endpoint_id": endpoint_id.to_string()}))?
+        );
+    } else {
+        println!("{endpoint_id}");
+    }
     Ok(())
 }

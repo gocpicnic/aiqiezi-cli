@@ -8,12 +8,24 @@
 use aiqiezi_client::ClientConfig;
 use serde_json::json;
 
-use super::{ensure_ok, local_request, print_response};
+use super::{ensure_ok, local_request, print_response, read_secret_line};
 
-pub async fn run(config: &ClientConfig) -> anyhow::Result<()> {
-    let old_password = rpassword::prompt_password("current password: ")?;
-    let new_password = rpassword::prompt_password("new password: ")?;
-    let confirmation = rpassword::prompt_password("confirm new password: ")?;
+pub async fn run(config: &ClientConfig, password_stdin: bool) -> anyhow::Result<()> {
+    let (old_password, new_password, confirmation) = if password_stdin {
+        let stdin = std::io::stdin();
+        let mut reader = stdin.lock();
+        (
+            read_secret_line(&mut reader)?,
+            read_secret_line(&mut reader)?,
+            read_secret_line(&mut reader)?,
+        )
+    } else {
+        (
+            rpassword::prompt_password("current password: ")?,
+            rpassword::prompt_password("new password: ")?,
+            rpassword::prompt_password("confirm new password: ")?,
+        )
+    };
 
     if new_password != confirmation {
         anyhow::bail!("passwords do not match");

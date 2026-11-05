@@ -35,6 +35,7 @@ fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
     logging::init()?;
     let config = ClientConfig::from_env()?;
+    let json = cli.json;
 
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -45,12 +46,16 @@ fn run() -> anyhow::Result<()> {
             Command::Start => commands::start::run(config).await,
             Command::Stop => commands::stop::run(&config).await,
             Command::Status => commands::status::run(&config).await,
-            Command::Whoami => commands::whoami::run(&config),
+            Command::Whoami => commands::whoami::run(&config, json),
             Command::SetServer { endpoint_id } => {
-                commands::set_server::run(&config, &endpoint_id).await
+                commands::set_server::run(&config, &endpoint_id, json).await
             }
-            Command::Login => commands::login::run(&config).await,
-            Command::ChangePassword => commands::change_password::run(&config).await,
+            Command::Login { password_stdin } => {
+                commands::login::run(&config, password_stdin).await
+            }
+            Command::ChangePassword { password_stdin } => {
+                commands::change_password::run(&config, password_stdin).await
+            }
             Command::ServerInfo => commands::server_info::run(&config).await,
         }
     })

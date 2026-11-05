@@ -123,12 +123,16 @@ The library must not:
 
 - stdout is for data only.
 - stderr is for errors, warnings, and progress.
-- Current socket commands print the JSON response envelope.
-- Future commands may add `--json` for one valid JSON document.
+- Socket commands print the JSON response envelope.
+- `--json` is a global flag; `whoami --json` prints a JSON object.
+- `login --password-stdin` reads one password line.
+- `change-password --password-stdin` reads old password, new password, and
+  confirmation, one per line.
 - Batch commands may use NDJSON/JSON Lines.
 - Never mix progress logs into stdout.
 - Exit code 0 on success; nonzero on failure.
 - Interactive prompts are not allowed in agent mode.
+- The first login returning `password_change_required` exits nonzero.
 
 ## Client enrollment
 
@@ -160,9 +164,9 @@ aiqiezi whoami
 the client EndpointId.
 
 The server returns `password_change_required` until the bootstrap password is
-changed. The password change enrolls the client EndpointId in the server
-whitelist. After that, the bootstrap value is ignored and the whitelist
-authorizes the EndpointId.
+changed. The first login exits nonzero in that state. The password change
+enrolls the client EndpointId in the server whitelist. After that, the bootstrap
+value is ignored and the whitelist authorizes the EndpointId.
 
 Login and `change-password` must use the client's persistent iroh secret key.
 Do not create a temporary endpoint for these commands: the server enrolls the
@@ -193,8 +197,9 @@ Commands should be:
 Destructive commands require an explicit confirmation flag such as `--yes` or
 `--force`.
 
-A `SKILL.md` in the CLI crate must document commands, JSON output, enrollment,
-examples, and safety rules.
+`crates/aiqiezi-cli/SKILL.md` is the agent-facing reference. It documents
+commands, JSON output, non-interactive password input, enrollment, examples,
+error codes, and safety rules. Keep it in sync with CLI behavior.
 
 ## Protocol rules
 
@@ -219,6 +224,7 @@ examples, and safety rules.
 - Store the client secret key with restrictive permissions.
 - Prompt for passwords without echo; never put them in argv, environment, or
   logs.
+- Agent mode accepts passwords only through `--password-stdin`.
 - Never store the server password; store only the client secret key.
 - Redact secrets in errors and logs.
 - Treat the client EndpointId as identity and the client secret key as the
@@ -306,9 +312,11 @@ For Markdown use an HTML comment with the same content.
 - Test client-key and config redaction.
 - Test local socket framing and permissions.
 - Test the server-only iroh firewall.
+- Test password stdin parsing and redaction.
 - Test password redaction and authentication error mapping.
 - Test error-to-exit-code mapping.
 - Test machine-readable output schemas.
+- Keep `SKILL.md` examples aligned with tests.
 - Integration tests must not require production data or secrets.
 
 ## Agent workflow

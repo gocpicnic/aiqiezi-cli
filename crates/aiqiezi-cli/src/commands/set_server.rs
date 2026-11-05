@@ -6,13 +6,17 @@
 */
 
 use aiqiezi_client::{local, ClientConfig, EndpointId};
-use aiqiezi_proto::{Request, PROTOCOL_VERSION};
+use aiqiezi_proto::{Request, Response, PROTOCOL_VERSION};
 use anyhow::Context;
 use serde_json::json;
 
 use super::{ensure_ok, print_response};
 
-pub async fn run(config: &ClientConfig, endpoint_id: &str) -> anyhow::Result<()> {
+pub async fn run(
+    config: &ClientConfig,
+    endpoint_id: &str,
+    json_output: bool,
+) -> anyhow::Result<()> {
     let endpoint_id = endpoint_id
         .parse::<EndpointId>()
         .context("invalid server EndpointId")?;
@@ -30,7 +34,14 @@ pub async fn run(config: &ClientConfig, endpoint_id: &str) -> anyhow::Result<()>
         }
         Err(_) => {
             config.save_server_id(endpoint_id)?;
-            println!("server id saved to {}", config.config_path.display());
+            if json_output {
+                print_response(&Response::success(
+                    None,
+                    json!({"server_id": endpoint_id.to_string()}),
+                ))?;
+            } else {
+                println!("server id saved to {}", config.config_path.display());
+            }
         }
     }
 

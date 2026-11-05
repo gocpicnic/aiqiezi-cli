@@ -91,10 +91,10 @@ aiqiezi change-password
 aiqiezi server-info
 ```
 
-The server returns `password_change_required` until the bootstrap password is
-changed. Changing it enrolls the client's persistent iroh EndpointId in the
-server whitelist. After that, the bootstrap password is ignored and the
-whitelist authorizes the EndpointId.
+The first login returns `password_change_required` and exits nonzero. Run
+`aiqiezi change-password` to continue. Changing it enrolls the client's
+persistent iroh EndpointId in the server whitelist. After that, the bootstrap
+password is ignored and the whitelist authorizes the EndpointId.
 
 `aiqiezi-server whoami` prints the **server** EndpointId.
 `aiqiezi whoami` prints the **client** EndpointId.
@@ -119,10 +119,17 @@ aiqiezi stop
 aiqiezi status
 aiqiezi whoami
 aiqiezi set-server <endpoint-id>
-aiqiezi login
-aiqiezi change-password
+aiqiezi login [--password-stdin]
+aiqiezi change-password [--password-stdin]
 aiqiezi server-info
 ```
+
+`--json` is a global flag. `whoami --json` prints a JSON object; socket
+commands already print the JSON response envelope.
+
+For AI agents, `login --password-stdin` reads one password line and
+`change-password --password-stdin` reads old password, new password, and
+confirmation, one per line. See [SKILL.md](crates/aiqiezi-cli/SKILL.md).
 
 Future commands will add folders, assets, search, upload, and download.
 
@@ -177,18 +184,24 @@ There is no endpoint ticket in the client configuration.
 - There is no local-IP bypass.
 - The local socket is the only local control channel.
 - Passwords are prompted without echo and are never stored.
+- Agent mode reads passwords from stdin; never pass them in argv or the
+  environment.
 - The client stores only its own iroh secret key and the server EndpointId.
 
 ## Machine-readable output
 
-Current commands print the JSON response envelope on stdout. `whoami` prints
-only the client EndpointId.
+Socket commands print the JSON response envelope on stdout. `whoami` prints
+only the client EndpointId, or a JSON object with `--json`. `--json` is a global
+flag.
+
+`login --password-stdin` reads one line. `change-password --password-stdin`
+reads three lines: old password, new password, and confirmation.
 
 Rules:
 
 - stdout contains data only;
 - stderr contains errors, warnings, and progress;
-- exit code is nonzero on failure;
+- exit code is nonzero on failure, including `password_change_required`;
 - future batch commands may use NDJSON.
 
 ## Development
@@ -231,4 +244,6 @@ types into this repository.
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): implementation rules for AI coding agents
+- [crates/aiqiezi-cli/SKILL.md](crates/aiqiezi-cli/SKILL.md): agent-facing
+  command and safety reference
 - `../aiqiezi-server/README.md`: system architecture and backend setup

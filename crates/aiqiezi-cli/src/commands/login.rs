@@ -9,10 +9,16 @@ use aiqiezi_client::ClientConfig;
 use aiqiezi_proto::error_codes;
 use serde_json::json;
 
-use super::{ensure_ok, local_request, print_response};
+use super::{ensure_ok, local_request, print_response, read_secret_line};
 
-pub async fn run(config: &ClientConfig) -> anyhow::Result<()> {
-    let password = rpassword::prompt_password("password: ")?;
+pub async fn run(config: &ClientConfig, password_stdin: bool) -> anyhow::Result<()> {
+    let password = if password_stdin {
+        let stdin = std::io::stdin();
+        let mut reader = stdin.lock();
+        read_secret_line(&mut reader)?
+    } else {
+        rpassword::prompt_password("password: ")?
+    };
     if password.is_empty() {
         anyhow::bail!("password must not be empty");
     }
@@ -23,7 +29,6 @@ pub async fn run(config: &ClientConfig) -> anyhow::Result<()> {
     if let Some(error) = &response.error {
         if error.code == error_codes::PASSWORD_CHANGE_REQUIRED {
             eprintln!("bootstrap password must be changed: run `aiqiezi change-password`");
-            return Ok(());
         }
     }
 
