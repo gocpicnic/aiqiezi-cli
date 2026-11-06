@@ -117,7 +117,7 @@ jobs:
             gh release create "$GITHUB_REF_NAME" \
               --repo "$GITHUB_REPOSITORY" \
               --title "$GITHUB_REF_NAME" \
-              --notes "Release $GITHUB_REF_NAME"
+              --notes "Release $GITHUB_REF_NAME: first-run aiqiezi-server EndpointId via \`aiqiezi start <endpoint-id>\`."
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}

@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "aiqiezi-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aiqiezi-client",
  "aiqiezi-proto",
@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "aiqiezi-client"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aiqiezi-proto",
  "anyhow",
