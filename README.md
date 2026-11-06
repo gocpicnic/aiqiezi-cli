@@ -7,6 +7,8 @@
 
 # aiqiezi-cli
 
+[![CI](https://github.com/gocpicnic/aiqiezi-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/gocpicnic/aiqiezi-cli/actions/workflows/ci.yml)
+
 Agent-ready command-line client and shared Rust client library for
 [aiqiezi-server](https://github.com/gocpicnic/aiqiezi-server), the self-hosted
 photo/video archive backend.
