@@ -143,7 +143,7 @@ async fn backend_request(
         return Response::error(
             request_id,
             error_codes::AUTH_UNAVAILABLE,
-            "server_id is not configured; run `aiqiezi set-server <endpoint-id>`",
+            "server_id is not configured; restart with `aiqiezi start <endpoint-id>` or run `aiqiezi set-server <endpoint-id>`",
         );
     };
 

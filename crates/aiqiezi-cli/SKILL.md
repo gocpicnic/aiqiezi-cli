@@ -39,7 +39,8 @@ token and no endpoint ticket.
 - Read passwords only through `--password-stdin`.
 - Do not ask for or print the client secret key.
 - Do not edit `config/client.json` or `key_data/secret_key.bin` directly.
-- Use `aiqiezi set-server` to change the aiqiezi-server EndpointId.
+- Use `aiqiezi start <server-endpoint-id>` on first start, or
+  `aiqiezi set-server` to change the aiqiezi-server EndpointId.
 - Do not run `aiqiezi change-password` unless the user explicitly asks.
 - Do not run `aiqiezi stop` unless the user asks.
 - Do not start the daemon in the foreground from an agent; it blocks.
@@ -55,9 +56,15 @@ Check whether the daemon is already running:
 aiqiezi status --json
 ```
 
-If it is not running, start it in the background.
+If it is not running, start it in the background. Pass the aiqiezi-server
+EndpointId on first start:
 
-Linux/macOS:
+```bash
+nohup aiqiezi start <server-endpoint-id> \
+  >>"${AIQIEZI_DATA_DIR:-./data}/client.log" 2>&1 &
+```
+
+If the EndpointId is already saved, omit the argument:
 
 ```bash
 nohup aiqiezi start >>"${AIQIEZI_DATA_DIR:-./data}/client.log" 2>&1 &
@@ -66,11 +73,12 @@ nohup aiqiezi start >>"${AIQIEZI_DATA_DIR:-./data}/client.log" 2>&1 &
 Windows PowerShell:
 
 ```powershell
-Start-Process aiqiezi -ArgumentList start -WindowStyle Hidden
+Start-Process aiqiezi -ArgumentList "start <server-endpoint-id>" -WindowStyle Hidden
 ```
 
 Then poll `aiqiezi status --json` until it succeeds. Do not run `aiqiezi start`
-without backgrounding it.
+without backgrounding it. If no EndpointId is configured, `start` exits and
+prints instructions instead of starting.
 
 ## Configuration
 
@@ -80,7 +88,13 @@ The aiqiezi-server EndpointId is stored in:
 <AIQIEZI_DATA_DIR>/config/client.json
 ```
 
-Set it with:
+Set it on first start:
+
+```bash
+aiqiezi start <server-endpoint-id>
+```
+
+Or save it without starting:
 
 ```bash
 aiqiezi set-server <server-endpoint-id> --json
@@ -119,7 +133,7 @@ printf '%s\n' '<password>' | aiqiezi login --password-stdin
 ## Commands
 
 ```text
-aiqiezi start
+aiqiezi start [<server-endpoint-id>]
 aiqiezi stop
 aiqiezi status
 aiqiezi whoami
@@ -224,7 +238,10 @@ aiqiezi set-server <server-endpoint-id> --json
 - `client daemon is not running`: start the daemon in the background and poll
   `aiqiezi status`.
 - `client key not found`: start the daemon once to create the persistent key.
-- `auth_unavailable`: run `aiqiezi set-server <server-endpoint-id>`.
+- `auth_unavailable`: confirm the saved aiqiezi-server EndpointId, or change it
+  with `aiqiezi set-server <server-endpoint-id>`.
+- `aiqiezi-server EndpointId is not configured`: restart the daemon with
+  `aiqiezi start <server-endpoint-id>` or run `aiqiezi set-server` first.
 - `password_change_required`: run `aiqiezi change-password --password-stdin`.
 - `rate_limited`: wait for the reported retry period.
 - `invalid_credentials`: verify the password with the user; do not print it.

@@ -43,7 +43,7 @@ fn run() -> anyhow::Result<()> {
 
     runtime.block_on(async {
         match cli.command {
-            Command::Start => commands::start::run(config).await,
+            Command::Start { endpoint_id } => commands::start::run(config, endpoint_id).await,
             Command::Stop => commands::stop::run(&config).await,
             Command::Status => commands::status::run(&config).await,
             Command::Whoami => commands::whoami::run(&config, json),

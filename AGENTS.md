@@ -110,7 +110,11 @@ The library must not:
 
 ## Client daemon and local socket
 
-- `aiqiezi start` runs the daemon in the foreground.
+- `aiqiezi start [<server-endpoint-id>]` runs the daemon in the foreground.
+- The optional EndpointId is saved only after the daemon lock is acquired, so a
+  failed start cannot overwrite the configuration of a running daemon.
+- `start` without a configured EndpointId exits with instructions and does not
+  start the daemon.
 - `aiqiezi stop` sends a shutdown command over the local socket.
 - The local socket path is `<AIQIEZI_RUNTIME_DIR>/client.sock`.
 - Linux/macOS use a Unix socket; Windows uses a named pipe.
@@ -145,13 +149,22 @@ Get the aiqiezi-server EndpointId first:
 aiqiezi-server whoami
 ```
 
-Configure the aiqiezi-server EndpointId and start the local daemon:
+Start the local daemon with the aiqiezi-server EndpointId:
 
 ```bash
 # On the client
+aiqiezi start <server-endpoint-id>
+```
+
+Alternatively:
+
+```bash
 aiqiezi set-server <server-endpoint-id>
 aiqiezi start
 ```
+
+`start` persists the EndpointId after taking the daemon lock. Without a
+configured EndpointId it exits nonzero and prints where to get the value.
 
 The first login uses the server's `AIQIEZI_BOOTSTRAP_PASSWORD`:
 
@@ -272,6 +285,7 @@ cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 cargo run -p aiqiezi-cli -- --help
 cargo run -p aiqiezi-cli -- start
+cargo run -p aiqiezi-cli -- start <server-endpoint-id>
 ```
 
 Makefile shortcuts:

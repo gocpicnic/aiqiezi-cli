@@ -26,7 +26,10 @@ pub struct Cli {
 pub enum Command {
     /// Start the local client daemon in the foreground
     #[command(visible_alias = "run")]
-    Start,
+    Start {
+        /// aiqiezi-server EndpointId to save before starting
+        endpoint_id: Option<String>,
+    },
     /// Stop the running local client daemon
     Stop,
     /// Query the local client daemon status
@@ -76,5 +79,22 @@ mod tests {
         let cli = Cli::try_parse_from(["aiqiezi", "whoami", "--json"]).unwrap();
         assert!(cli.json);
         assert!(matches!(cli.command, Command::Whoami));
+    }
+
+    #[test]
+    fn parses_start_with_endpoint_id() {
+        let cli = Cli::try_parse_from(["aiqiezi", "start", "server-endpoint-id"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Command::Start {
+                endpoint_id: Some(endpoint_id)
+            } if endpoint_id == "server-endpoint-id"
+        ));
+    }
+
+    #[test]
+    fn parses_start_without_endpoint_id() {
+        let cli = Cli::try_parse_from(["aiqiezi", "start"]).unwrap();
+        assert!(matches!(cli.command, Command::Start { endpoint_id: None }));
     }
 }

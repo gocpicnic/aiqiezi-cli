@@ -69,7 +69,8 @@ aiqiezi-server
 ```
 
 The local daemon runs in the foreground. Run `aiqiezi start` in one terminal and
-the other commands in another terminal.
+the other commands in another terminal. On first use, pass the aiqiezi-server
+EndpointId to `start`.
 
 ## Platform support
 
@@ -94,12 +95,24 @@ Get the aiqiezi-server EndpointId first:
 aiqiezi-server whoami
 ```
 
-Configure the client and start its local daemon:
+Start the local daemon with the aiqiezi-server EndpointId:
+
+```bash
+aiqiezi start <server-endpoint-id>
+```
+
+`start` validates and saves the EndpointId immediately after acquiring the
+client daemon lock. Later runs can use plain `aiqiezi start`.
+
+Alternatively, save it first:
 
 ```bash
 aiqiezi set-server <server-endpoint-id>
 aiqiezi start
 ```
+
+If no EndpointId is configured, `start` exits with instructions instead of
+starting an unusable daemon.
 
 In another terminal, perform the first login:
 
@@ -132,7 +145,7 @@ key.
 ## Commands
 
 ```bash
-aiqiezi start
+aiqiezi start [<server-endpoint-id>]
 aiqiezi stop
 aiqiezi status
 aiqiezi whoami

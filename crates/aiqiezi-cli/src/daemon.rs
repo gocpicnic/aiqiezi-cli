@@ -24,6 +24,17 @@ use crate::daemon_commands;
 use crate::lock::ClientLock;
 use crate::shutdown::Shutdown;
 
+const MISSING_SERVER_ID: &str = concat!(
+    "aiqiezi-server EndpointId is not configured.\n\n",
+    "Get it on the server host:\n",
+    "  aiqiezi-server whoami\n\n",
+    "Then run:\n",
+    "  aiqiezi start <server-endpoint-id>\n\n",
+    "Or save it first:\n",
+    "  aiqiezi set-server <server-endpoint-id>\n",
+    "  aiqiezi start",
+);
+
 pub struct AppState {
     pub config: ClientConfig,
     pub endpoint: Endpoint,
@@ -33,15 +44,27 @@ pub struct AppState {
     pub shutdown: Shutdown,
 }
 
-pub async fn run(config: ClientConfig) -> anyhow::Result<()> {
+pub async fn run(
+    mut config: ClientConfig,
+    server_override: Option<EndpointId>,
+) -> anyhow::Result<()> {
     create_private_dir(&config.data_dir)?;
     create_private_dir(&config.runtime_dir)?;
     let lock = ClientLock::acquire(&config.runtime_dir)?;
     info!(lock = %lock.path().display(), "client lock acquired");
 
+    if let Some(server_id) = server_override {
+        config.save_server_id(server_id)?;
+        config.server_id = Some(server_id);
+    }
+    let Some(server_id) = config.server_id else {
+        return Err(anyhow::anyhow!(MISSING_SERVER_ID));
+    };
+    info!(server_id = %server_id, "aiqiezi-server EndpointId configured");
+
     let key = key::load_or_create_key(&config)?;
     let client_id = key.public();
-    let server_id = Arc::new(RwLock::new(config.server_id));
+    let server_id = Arc::new(RwLock::new(Some(server_id)));
     let hooks = ClientHooks::new(server_id.clone());
 
     let endpoint = Endpoint::builder(presets::N0)

@@ -90,7 +90,9 @@ impl ClientConfig {
 
     pub fn require_server_id(&self) -> anyhow::Result<EndpointId> {
         self.server_id.ok_or_else(|| {
-            anyhow::anyhow!("server_id is not configured; run `aiqiezi set-server <endpoint-id>`")
+            anyhow::anyhow!(
+                "server_id is not configured; run `aiqiezi start <endpoint-id>` or `aiqiezi set-server <endpoint-id>`"
+            )
         })
     }
 }
