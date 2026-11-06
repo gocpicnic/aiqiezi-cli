@@ -221,6 +221,9 @@ There is no endpoint ticket in the client configuration.
   environment.
 - The client stores only its own iroh secret key and the aiqiezi-server EndpointId.
 
+See [SECURITY.md](SECURITY.md) for vulnerability reporting and the security
+scope.
+
 ## Machine-readable output
 
 Socket commands print the JSON response envelope on stdout. `whoami` prints
@@ -313,9 +316,16 @@ aiqiezi-<version>-x86_64-pc-windows-msvc.zip
 The Windows binary uses the static CRT. Release archives include the binary,
 `LICENSE`, and checksums. No installers or platform signing are provided.
 
+Dependabot checks Cargo and GitHub Actions dependencies weekly. Follow
+[docs/branch-protection.md](docs/branch-protection.md) when configuring `main`
+protection.
+
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): implementation rules for AI coding agents
+- [SECURITY.md](SECURITY.md): vulnerability reporting and security scope
+- [docs/branch-protection.md](docs/branch-protection.md): required `main`
+  protection and CI checks
 - [crates/aiqiezi-cli/SKILL.md](crates/aiqiezi-cli/SKILL.md): agent-facing
   command and safety reference
 - [aiqiezi-server](https://github.com/gocpicnic/aiqiezi-server): system

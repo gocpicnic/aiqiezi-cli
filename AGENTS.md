@@ -64,7 +64,14 @@ Rules:
 ```text
 aiqiezi-cli/
 ├── Cargo.toml                 # workspace
-├── .github/workflows/         # CI and release automation
+├── SECURITY.md                # vulnerability disclosure and security scope
+├── .github/
+│   ├── dependabot.yml         # Cargo and Actions updates
+│   └── workflows/             # CI and release automation
+├── docs/
+│   └── branch-protection.md
+├── scripts/
+│   └── configure-branch-protection.sh
 ├── crates/
 │   ├── aiqiezi-client/        # shared iroh client library
 │   └── aiqiezi-cli/           # CLI binary
@@ -250,6 +257,16 @@ error codes, and safety rules. Keep it in sync with CLI behavior.
 - Do not bypass the aiqiezi-server whitelist for local development.
 - A stolen client key grants that client's access until its EndpointId is
   disabled or removed on the server.
+
+## Repository security
+
+- Keep `SECURITY.md` and private vulnerability reporting enabled.
+- Keep Dependabot enabled for Cargo and GitHub Actions.
+- Keep `main` protected with the required `fmt`, `clippy`, and test matrix
+  checks documented in `docs/branch-protection.md`.
+- Do not use `pull_request_target` for untrusted pull requests.
+- Review dependency changes before merging.
+- Never put credentials or client keys in workflow files or repository data.
 
 ## Configuration
 
