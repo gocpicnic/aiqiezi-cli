@@ -279,6 +279,24 @@ aiqiezi-proto = { git = "https://github.com/gocpicnic/aiqiezi-server", rev = "46
 Update the revision when the wire protocol changes. Do not copy the protocol
 types into this repository.
 
+## CI and releases
+
+GitHub Actions runs:
+
+- `fmt` and `clippy` on Linux;
+- workspace tests on Linux, Windows, and macOS.
+
+Pushing a `v*` tag builds and publishes:
+
+```text
+aiqiezi-<version>-x86_64-unknown-linux-musl.tar.gz
+aiqiezi-<version>-x86_64-apple-darwin.tar.gz
+aiqiezi-<version>-x86_64-pc-windows-msvc.zip
+```
+
+The Windows binary uses the static CRT. Release archives include the binary,
+`LICENSE`, and checksums. No installers or platform signing are provided.
+
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): implementation rules for AI coding agents

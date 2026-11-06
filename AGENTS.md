@@ -309,6 +309,19 @@ dist/x86_64-pc-windows-msvc/aiqiezi.exe
 build requires `cargo-xwin`, the MSVC Rust target, `llvm-tools`, `clang-cl`,
 and `lld-link`, and uses the static CRT.
 
+## CI and release rules
+
+- CI runs formatting and clippy on Linux plus workspace tests on Linux,
+  Windows, and macOS.
+- Pushing a `v*` tag builds the Linux musl, macOS x86_64, and Windows MSVC
+  x86_64 binaries and publishes them as GitHub Release assets.
+- Windows release builds use the static CRT.
+- Release artifacts include `LICENSE` and checksums.
+- No installers, signing, or notarization are part of the normal workflow.
+- Pin third-party Actions to immutable commit SHAs.
+- Keep workflow `permissions` minimal; only the release job gets
+  `contents: write`.
+
 ## Source file rules
 
 Every new `.rs`, `.sql`, or `.md` source file must start with the project
