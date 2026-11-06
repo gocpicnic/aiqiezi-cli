@@ -42,8 +42,9 @@ Mandatory constraints:
 ## Platform support
 
 Tier 1 platforms are x86_64 Windows, x86_64 macOS, and x86_64 Linux. ARM64
-targets are deferred. The CLI is built from source; no prebuilt binaries or
-installers are provided yet.
+targets are deferred. GitHub Actions builds release binaries for all Tier 1
+targets; installers, signing, and notarization are deferred. Building from
+source remains supported.
 
 Rules:
 
@@ -63,6 +64,7 @@ Rules:
 ```text
 aiqiezi-cli/
 ├── Cargo.toml                 # workspace
+├── .github/workflows/         # CI and release automation
 ├── crates/
 │   ├── aiqiezi-client/        # shared iroh client library
 │   └── aiqiezi-cli/           # CLI binary

@@ -73,8 +73,9 @@ the other commands in another terminal.
 
 ## Platform support
 
-Tier 1 targets are x86_64 Windows, x86_64 macOS, and x86_64 Linux. The CLI is
-currently built from source; prebuilt binaries and installers are deferred.
+Tier 1 targets are x86_64 Windows, x86_64 macOS, and x86_64 Linux. GitHub
+Actions builds release binaries for all three; installers, signing, and
+notarization are deferred. Building from source remains supported.
 
 ARM64 targets, including Apple Silicon, are not yet supported. Source builds
 may work on those hosts, but they are untested and outside the support matrix.
