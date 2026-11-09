@@ -46,6 +46,7 @@ fn run() -> anyhow::Result<()> {
             Command::Start { endpoint_id } => commands::start::run(config, endpoint_id).await,
             Command::Stop => commands::stop::run(&config).await,
             Command::Status => commands::status::run(&config).await,
+            Command::Reconnect => commands::reconnect::run(&config).await,
             Command::Whoami => commands::whoami::run(&config, json),
             Command::SetServer { endpoint_id } => {
                 commands::set_server::run(&config, &endpoint_id, json).await

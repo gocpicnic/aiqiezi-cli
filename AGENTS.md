@@ -240,6 +240,16 @@ error codes, and safety rules. Keep it in sync with CLI behavior.
 - Large media must stream; do not load entire files into memory.
 - Temporary files must be cleaned up on failure.
 
+## Network recovery
+
+- Call `Endpoint::network_change()` after a detected or reported network change.
+- The local `reconnect` command must notify the running daemon without restarting
+  it.
+- Read-only backend requests may refresh network state and retry once after a
+  timeout.
+- Never automatically retry non-idempotent operations such as
+  `change-password`.
+
 ## Security rules
 
 - Never commit client keys, relay tokens, or runtime credentials.

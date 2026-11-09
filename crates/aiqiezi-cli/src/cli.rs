@@ -34,6 +34,8 @@ pub enum Command {
     Stop,
     /// Query the local client daemon status
     Status,
+    /// Notify the client daemon about a network change and refresh its paths
+    Reconnect,
     /// Print the client's persistent EndpointId
     Whoami,
     /// Set the backend server EndpointId
@@ -72,6 +74,12 @@ mod tests {
                 password_stdin: true
             }
         ));
+    }
+
+    #[test]
+    fn parses_reconnect() {
+        let cli = Cli::try_parse_from(["aiqiezi", "reconnect"]).unwrap();
+        assert!(matches!(cli.command, Command::Reconnect));
     }
 
     #[test]

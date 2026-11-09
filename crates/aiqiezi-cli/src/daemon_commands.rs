@@ -20,6 +20,7 @@ pub async fn execute(state: &AppState, request: Request) -> Response {
         "login" => login(state, request_id, &request.params).await,
         "change-password" => change_password(state, request_id, &request.params).await,
         "server-info" => server_info(state, request_id).await,
+        "reconnect" => reconnect(state, request_id).await,
         _ => Response::error(
             request_id,
             error_codes::UNKNOWN_COMMAND,
@@ -93,6 +94,7 @@ async fn login(state: &AppState, request_id: Option<String>, params: &Value) -> 
         ALPN_AUTH,
         "login",
         json!({"password": password}),
+        true,
     )
     .await
 }
@@ -123,12 +125,18 @@ async fn change_password(state: &AppState, request_id: Option<String>, params: &
             "old_password": old_password,
             "new_password": new_password,
         }),
+        false,
     )
     .await
 }
 
 async fn server_info(state: &AppState, request_id: Option<String>) -> Response {
-    backend_request(state, request_id, ALPN_JSON, "server-info", json!({})).await
+    backend_request(state, request_id, ALPN_JSON, "server-info", json!({}), true).await
+}
+
+async fn reconnect(state: &AppState, request_id: Option<String>) -> Response {
+    state.endpoint.network_change().await;
+    Response::success(request_id, json!({"message": "network state refreshed"}))
 }
 
 async fn backend_request(
@@ -137,6 +145,7 @@ async fn backend_request(
     alpn: &[u8],
     command: &str,
     params: Value,
+    retry_on_timeout: bool,
 ) -> Response {
     let server_id = *state.server_id.read().await;
     let Some(server_id) = server_id else {
@@ -147,7 +156,13 @@ async fn backend_request(
         );
     };
 
-    match backend::request(&state.endpoint, server_id, alpn, command, params).await {
+    let result = if retry_on_timeout {
+        backend::request_with_network_retry(&state.endpoint, server_id, alpn, command, params).await
+    } else {
+        backend::request(&state.endpoint, server_id, alpn, command, params).await
+    };
+
+    match result {
         Ok(mut response) => {
             response.request_id = request_id;
             response

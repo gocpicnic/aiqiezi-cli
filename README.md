@@ -144,12 +144,23 @@ aiqiezi stop
 The client never stores the server password. It stores only its own iroh secret
 key.
 
+After a laptop sleep, network switch, or temporary network outage, notify the
+running daemon about the network change:
+
+```bash
+aiqiezi reconnect
+```
+
+Read-only backend requests also retry once after refreshing iroh network state
+if their first attempt times out.
+
 ## Commands
 
 ```bash
 aiqiezi start [<server-endpoint-id>]
 aiqiezi stop
 aiqiezi status
+aiqiezi reconnect
 aiqiezi whoami
 aiqiezi set-server <endpoint-id>
 aiqiezi login [--password-stdin]

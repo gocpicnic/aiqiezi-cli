@@ -13,8 +13,10 @@ use anyhow::{bail, Context};
 use iroh::{Endpoint, EndpointId};
 use serde_json::Value;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tracing::warn;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+const RETRY_ATTEMPT_TIMEOUT: Duration = Duration::from_secs(15);
 static REQUEST_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 pub async fn request(
@@ -30,6 +32,38 @@ pub async fn request(
     )
     .await
     .context("backend request timed out")?
+}
+
+/// Request a read-only resource, retrying once after notifying iroh about a
+/// possible network change. Use only for idempotent commands.
+pub async fn request_with_network_retry(
+    endpoint: &Endpoint,
+    server_id: EndpointId,
+    alpn: &[u8],
+    command: &str,
+    params: Value,
+) -> anyhow::Result<Response> {
+    match tokio::time::timeout(
+        RETRY_ATTEMPT_TIMEOUT,
+        request_inner(endpoint, server_id, alpn, command, params.clone()),
+    )
+    .await
+    {
+        Ok(result) => result,
+        Err(_) => {
+            warn!(
+                command,
+                "backend request timed out; notifying iroh about a network change"
+            );
+            endpoint.network_change().await;
+            tokio::time::timeout(
+                RETRY_ATTEMPT_TIMEOUT,
+                request_inner(endpoint, server_id, alpn, command, params),
+            )
+            .await
+            .context("backend request timed out after network refresh")?
+        }
+    }
 }
 
 async fn request_inner(

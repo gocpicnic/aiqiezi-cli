@@ -7,6 +7,7 @@
 
 pub mod change_password;
 pub mod login;
+pub mod reconnect;
 pub mod server_info;
 pub mod set_server;
 pub mod start;

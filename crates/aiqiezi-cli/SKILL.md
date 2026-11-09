@@ -136,6 +136,7 @@ printf '%s\n' '<password>' | aiqiezi login --password-stdin
 aiqiezi start [<server-endpoint-id>]
 aiqiezi stop
 aiqiezi status
+aiqiezi reconnect
 aiqiezi whoami
 aiqiezi set-server <endpoint-id>
 aiqiezi login [--password-stdin]
@@ -247,6 +248,8 @@ aiqiezi set-server <server-endpoint-id> --json
 - `invalid_credentials`: verify the password with the user; do not print it.
 - aiqiezi-server connection failures: confirm the aiqiezi-server EndpointId
   and that the client is whitelisted on aiqiezi-server.
+- timeouts after sleep or a network change: run `aiqiezi reconnect`; read-only
+  requests also retry once after refreshing iroh network state.
 
 ## Current limitations
 
